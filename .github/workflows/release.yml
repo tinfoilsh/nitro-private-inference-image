@@ -8,7 +8,7 @@ on:
 jobs:
   release:
     name: Release
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: write
       packages: write
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build nginx-nitro image
+      - name: Build ollama-nitro image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -31,29 +31,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build eif-builder image
-        uses: docker/build-push-action@v5
-        with:
-          context: eif-builder
-          push: false
-          load: true
-          tags: eif-builder:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
       - name: Build EIF image
         run: |
-          docker run \
-            --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v $(pwd):/output \
-            -e DOCKER_IMAGE=ollama-nitro:latest \
-            -e EIF_FILE=tinfoil-enclave-${{ github.ref_name }}.eif \
-            -e INFO_FILE=tinfoil-enclave-${{ github.ref_name }}-info.json \
-            eif-builder:latest
+          nitro-cli build-enclave --docker-uri ollama-nitro:latest --output-path tinfoil-enclave-${{ github.ref_name }}.eif
 
       - name: Create measurements predicate
-        run: jq -r ".Measurements" tinfoil-enclave-${{ github.ref_name }}-info.json > predicate.json
+        run: |
+          nitro-cli describe-eif --eif-path tinfoil-enclave-${{ github.ref_name }}.eif > tinfoil-enclave-${{ github.ref_name }}-info.json
+          jq -r ".Measurements" tinfoil-enclave-${{ github.ref_name }}-info.json > predicate.json
 
       - name: Attest
         uses: actions/attest@v1
