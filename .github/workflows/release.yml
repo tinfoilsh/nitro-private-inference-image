@@ -46,6 +46,10 @@ jobs:
           predicate-type: https://tinfoil.sh/predicate/nitro-enclave-measurements/v1
           predicate-path: predicate.json
 
+      - name: Move artifact to storage directory
+        run: |
+          sudo mv tinfoil-enclave-${{ github.ref_name }}.eif /usr/share/caddy/files/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
+
       - name: Generate release notes
         id: generate-release-notes
         run: |
@@ -55,6 +59,7 @@ jobs:
           $(cat predicate.json)
           \`\`\`
           Log: https://search.sigstore.dev?logIndex=$(jq -r ".verificationMaterial.tlogEntries[0].logIndex" ${{ steps.attest.outputs.bundle-path }})
+          EIF image: https://static.tinfoil.sh/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
           EOF
           )
           echo "release-notes<<EOF" >> "$GITHUB_OUTPUT"
@@ -65,6 +70,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            tinfoil-enclave-${{ github.ref_name }}.eif
             tinfoil-enclave-${{ github.ref_name }}-info.json
           body: ${{ steps.generate-release-notes.outputs.release-notes }}
