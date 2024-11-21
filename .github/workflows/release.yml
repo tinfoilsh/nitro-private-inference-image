@@ -28,12 +28,10 @@ jobs:
           push: false
           load: true
           tags: ollama-nitro:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: Build EIF image
         run: |
-          nitro-cli build-enclave --docker-uri ollama-nitro:latest --output-path tinfoil-enclave-${{ github.ref_name }}.eif
+          nitro-cli build-enclave --docker-uri ollama-nitro:latest --output-file tinfoil-enclave-${{ github.ref_name }}.eif
 
       - name: Create measurements predicate
         run: |
