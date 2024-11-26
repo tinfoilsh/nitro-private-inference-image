@@ -42,28 +42,28 @@ jobs:
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v $(pwd):/output \
-            -e EIF_FILE=tinfoil-enclave-${{ github.ref_name }}.eif \
-            -e INFO_FILE=tinfoil-enclave-${{ github.ref_name }}-info.json \
+            -e EIF_FILE=tinfoil-enclave-ollama-${{ github.ref_name }}.eif \
+            -e INFO_FILE=tinfoil-enclave-ollama-${{ github.ref_name }}-info.json \
             -e DOCKER_IMAGE=ollama-nitro:latest \
             eif-builder:latest
 
       - name: Extract measurements predicate
         run: |
-          jq -r ".Measurements" tinfoil-enclave-${{ github.ref_name }}-info.json > predicate.json
+          jq -r ".Measurements" tinfoil-enclave-ollama-${{ github.ref_name }}-info.json > predicate.json
 
       - name: Attest
         uses: actions/attest@v1
         id: attest
         with:
-          subject-path: tinfoil-enclave-${{ github.ref_name }}.eif
+          subject-path: tinfoil-enclave-ollama-${{ github.ref_name }}.eif
           predicate-type: https://tinfoil.sh/predicate/nitro-enclave-measurements/v1
           predicate-path: predicate.json
 
       - name: Move artifact to upload directory
         run: |
           mkdir upload
-          sudo mv tinfoil-enclave-${{ github.ref_name }}.eif upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
-          sha256sum tinfoil-enclave-${{ github.ref_name }}.eif | cut -d ' ' -f 1 > upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif.sha256
+          sudo mv tinfoil-enclave-ollama-${{ github.ref_name }}.eif upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
+          sha256sum tinfoil-enclave-ollama-${{ github.ref_name }}.eif | cut -d ' ' -f 1 > upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif.sha256
 
       - name: Upload artifact
         uses: ryand56/r2-upload-action@latest
@@ -96,6 +96,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
+            upload/tinfoil-enclave-ollama-${{ github.ref_name }}-info.json
             upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif.sha256
           body: ${{ steps.generate-release-notes.outputs.release-notes }}
