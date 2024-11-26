@@ -8,7 +8,8 @@ on:
 jobs:
   release:
     name: Release
-    runs-on: large
+    runs-on:
+      labels: large
     permissions:
       contents: write
       packages: write
