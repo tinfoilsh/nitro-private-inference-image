@@ -8,7 +8,7 @@ on:
 jobs:
   release:
     name: Release
-    runs-on: self-hosted
+    runs-on: large
     permissions:
       contents: write
       packages: write
@@ -46,9 +46,19 @@ jobs:
           predicate-type: https://tinfoil.sh/predicate/nitro-enclave-measurements/v1
           predicate-path: predicate.json
 
-      - name: Move artifact to storage directory
+      - name: Move artifact to upload directory
         run: |
-          sudo mv tinfoil-enclave-${{ github.ref_name }}.eif /usr/share/caddy/files/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
+          sudo mv tinfoil-enclave-${{ github.ref_name }}.eif upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
+
+      - name: Upload artifact
+        uses: ryand56/r2-upload-action@latest
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: ${{ secrets.R2_BUCKET }}
+          source-dir: upload
+          destination-dir: ./
 
       - name: Generate release notes
         id: generate-release-notes
@@ -59,7 +69,8 @@ jobs:
           $(cat predicate.json)
           \`\`\`
           Log: https://search.sigstore.dev?logIndex=$(jq -r ".verificationMaterial.tlogEntries[0].logIndex" ${{ steps.attest.outputs.bundle-path }})
-          EIF image: https://static.tinfoil.sh/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
+          EIF image: https://enclave-images.tinfoil.sh/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
+          EIF hash: $(sha256sum tinfoil-enclave-${{ github.ref_name }}.eif | cut -d ' ' -f 1)
           EOF
           )
           echo "release-notes<<EOF" >> "$GITHUB_OUTPUT"
