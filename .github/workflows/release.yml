@@ -29,13 +29,24 @@ jobs:
           load: true
           tags: ollama-nitro:latest
 
+      - name: Build EIF builder
+        uses: docker/build-push-action@v5
+        with:
+          context: eif-builder
+          push: false
+          load: true
+          tags: eif-builder:latest
+
       - name: Build EIF image
         run: |
-          nitro-cli build-enclave --docker-uri ollama-nitro:latest --output-file tinfoil-enclave-${{ github.ref_name }}.eif
+          docker run --rm -v $(pwd):/output \
+            -e EIF_FILE=tinfoil-enclave-${{ github.ref_name }}.eif \
+            -e INFO_FILE=tinfoil-enclave-${{ github.ref_name }}-info.json \
+            -e DOCKER_IMAGE=ollama-nitro:latest \
+            eif-builder:latest
 
-      - name: Create measurements predicate
+      - name: Extract measurements predicate
         run: |
-          nitro-cli describe-eif --eif-path tinfoil-enclave-${{ github.ref_name }}.eif > tinfoil-enclave-${{ github.ref_name }}-info.json
           jq -r ".Measurements" tinfoil-enclave-${{ github.ref_name }}-info.json > predicate.json
 
       - name: Attest
