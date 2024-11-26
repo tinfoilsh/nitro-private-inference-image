@@ -96,6 +96,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            upload/tinfoil-enclave-ollama-${{ github.ref_name }}-info.json
+            tinfoil-enclave-ollama-${{ github.ref_name }}-info.json
             upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif.sha256
           body: ${{ steps.generate-release-notes.outputs.release-notes }}
