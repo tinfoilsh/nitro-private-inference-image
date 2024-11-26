@@ -39,7 +39,9 @@ jobs:
 
       - name: Build EIF image
         run: |
-          docker run --rm -v $(pwd):/output \
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $(pwd):/output \
             -e EIF_FILE=tinfoil-enclave-${{ github.ref_name }}.eif \
             -e INFO_FILE=tinfoil-enclave-${{ github.ref_name }}-info.json \
             -e DOCKER_IMAGE=ollama-nitro:latest \
@@ -60,6 +62,7 @@ jobs:
       - name: Move artifact to upload directory
         run: |
           sudo mv tinfoil-enclave-${{ github.ref_name }}.eif upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
+          sha256sum tinfoil-enclave-${{ github.ref_name }}.eif | cut -d ' ' -f 1 > upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif.sha256
 
       - name: Upload artifact
         uses: ryand56/r2-upload-action@latest
@@ -81,7 +84,7 @@ jobs:
           \`\`\`
           Log: https://search.sigstore.dev?logIndex=$(jq -r ".verificationMaterial.tlogEntries[0].logIndex" ${{ steps.attest.outputs.bundle-path }})
           EIF image: https://enclave-images.tinfoil.sh/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
-          EIF hash: $(sha256sum tinfoil-enclave-${{ github.ref_name }}.eif | cut -d ' ' -f 1)
+          EIF hash: $(cat upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif.sha256)
           EOF
           )
           echo "release-notes<<EOF" >> "$GITHUB_OUTPUT"
@@ -92,5 +95,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            tinfoil-enclave-${{ github.ref_name }}-info.json
+            upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
+            upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif.sha256
           body: ${{ steps.generate-release-notes.outputs.release-notes }}
