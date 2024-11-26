@@ -63,7 +63,7 @@ jobs:
         run: |
           mkdir upload
           sudo mv tinfoil-enclave-ollama-${{ github.ref_name }}.eif upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif
-          sha256sum tinfoil-enclave-ollama-${{ github.ref_name }}.eif | cut -d ' ' -f 1 > upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif.sha256
+          sha256sum upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif | cut -d ' ' -f 1 > upload/tinfoil-enclave-ollama-${{ github.ref_name }}.eif.sha256
 
       - name: Upload artifact
         uses: ryand56/r2-upload-action@latest
