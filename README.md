@@ -32,3 +32,36 @@ curl -LO https://enclave-images.tinfoil.sh/tinfoil-enclave-ollama-v0.0.8.eif
 - Build-time attestation via Sigstore & GitHub OIDC
 - Runtime attestation via an AWS Nitro Enclave
 - Verifiable PCR measurements at both build and runtime
+
+## Development
+
+### Creating a new release
+
+To create a new release, push a new tag (semver `vX.X.X`) to this repo. GitHub Actions will build an EIF image and publish a link to the image, it's measurements, and the Sigstore attestation to the [release notes](https://github.com/tinfoilanalytics/nitro-private-inference-image/releases).
+
+### Installation
+
+To prepare a fresh EC2 instance:
+
+```bash
+# Install dependencies
+sudo dnf install -y git socat docker aws-nitro-enclaves-cli aws-nitro-enclaves-cli-devel
+sudo usermod -aG ne ec2-user
+sudo usermod -aG docker ec2-user
+
+# Raise resource limits
+sudo sed -i 's/^memory.*/memory_mib: 24576/' /etc/nitro_enclaves/allocator.yaml
+sudo sed -i 's/^cpu.*/cpu_count: 6/' /etc/nitro_enclaves/allocator.yaml
+
+# Start services
+sudo systemctl enable --now docker
+sudo systemctl enable --now nitro-enclaves-allocator
+```
+
+### Deploying
+
+1. Run the [update script](https://github.com/tinfoilanalytics/nitro-attestation-shim/blob/main/deploy/update.sh) on the AWS Nitro EC2 instance to download the new EIF image and start a new enclave.
+
+2. With the enclave running, start the vsock HTTP proxy: `socat tcp-listen:6000,reuseaddr,fork vsock-connect:16:6000`
+
+If running under systemd, restart the `vsock-proxy` service with `sudo sysrtemctl restart vsock-proxy`
