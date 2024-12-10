@@ -64,4 +64,4 @@ sudo systemctl enable --now nitro-enclaves-allocator
 
 2. With the enclave running, start the vsock HTTP proxy: `socat tcp-listen:6000,reuseaddr,fork vsock-connect:16:6000`
 
-If running under systemd, restart the `vsock-proxy` service with `sudo sysrtemctl restart vsock-proxy`
+If running under systemd, restart the `vsock-proxy` service with `sudo systemctl restart vsock-proxy`
