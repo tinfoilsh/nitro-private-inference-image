@@ -60,7 +60,7 @@ sudo systemctl enable --now nitro-enclaves-allocator
 
 ### Deploying
 
-1. Run the [update script](https://github.com/tinfoilanalytics/nitro-attestation-shim/blob/main/deploy/update.sh) on the AWS Nitro EC2 instance to download the new EIF image and start a new enclave.
+1. Run the [update script](https://github.com/tinfoilanalytics/nitro-private-inference-image/blob/main/deploy/update.sh) on the AWS Nitro EC2 instance to download the new EIF image and start a new enclave.
 
 2. With the enclave running, start the vsock HTTP proxy: `socat tcp-listen:6000,reuseaddr,fork vsock-connect:16:6000`
 
