@@ -2,7 +2,7 @@
 
 set -e
 
-LATEST_TAG=$(curl -s https://api.github.com/repos/tinfoilanalytics/nitro-private-inference-image/releases | jq -r ".[0].tag_name")
+LATEST_TAG=$(curl -s https://api.github.com/repos/tinfoilsh/nitro-private-inference-image/releases | jq -r ".[0].tag_name")
 echo "Downloading enclave $LATEST_TAG"
 
 curl -LO "https://enclave-images.tinfoil.sh/tinfoil-enclave-ollama-$LATEST_TAG.eif"
